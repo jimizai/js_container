@@ -2,7 +2,34 @@ use boa::{
     exec::Executable, object::ObjectInitializer, parse, property::Attribute, value::Value, Context,
 };
 use js_sys::JSON;
+use std::convert::From;
 use wasm_bindgen::prelude::*;
+
+struct JsValueRef(JsValue);
+
+impl JsValueRef {
+    fn inner(self) -> JsValue {
+        self.0
+    }
+}
+
+impl From<Value> for JsValueRef {
+    fn from(v: Value) -> Self {
+        let js_value = match v {
+            Value::Null => JsValue::NULL,
+            Value::Undefined => JsValue::UNDEFINED,
+            Value::Boolean(b) => match b {
+                false => JsValue::FALSE,
+                true => JsValue::TRUE,
+            },
+            Value::Integer(n) => JsValue::from_f64(n as f64),
+            Value::Rational(n) => JsValue::from_f64(n),
+            _ => JsValue::UNDEFINED,
+        };
+
+        Self(js_value)
+    }
+}
 
 #[wasm_bindgen]
 pub fn evaluate(src: &str) -> Result<JsValue, JsValue> {
@@ -30,7 +57,7 @@ pub fn evaluate(src: &str) -> Result<JsValue, JsValue> {
     };
     expr.run(&mut context)
         .map_err(|e| JsValue::from(format!("Uncaught {}", e.display())))
-        .map(|v| parse_str(&v.display().to_string()))
+        .map(|v| JsValueRef::from(v).inner())
 }
 
 fn parse_str(src: &str) -> JsValue {
