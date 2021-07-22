@@ -33,6 +33,7 @@ new Vue({
       }
     },
     exec() {
+      console.clear();
       try {
         const result = m.evaluate(this.code);
         console.log(result);

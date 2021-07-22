@@ -1,4 +1,7 @@
-use boa::{exec::Executable, object::ObjectInitializer, parse, property::Attribute, Context};
+use boa::{
+    exec::Executable, object::ObjectInitializer, parse, property::Attribute, value::Value, Context,
+};
+use js_sys::JSON;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -27,5 +30,12 @@ pub fn evaluate(src: &str) -> Result<JsValue, JsValue> {
     };
     expr.run(&mut context)
         .map_err(|e| JsValue::from(format!("Uncaught {}", e.display())))
-        .map(|v| JsValue::from(v.display().to_string()))
+        .map(|v| parse_str(&v.display().to_string()))
+}
+
+fn parse_str(src: &str) -> JsValue {
+    match unsafe { JSON::parse(src) } {
+        Ok(r) => r,
+        Err(_) => JsValue::from(src),
+    }
 }
