@@ -10,5 +10,7 @@ crate-type = ["cdylib"]
 [dependencies]
 Boa = {version = "0.11.0", features = ["console"]}
 getrandom = {version = "0.2.3", features = ["js"]}
-wasm-bindgen = "0.2.74"
+wasm-bindgen = {version = "0.2.74", features = ["serde-serialize"]}
 js-sys = "*"
+serde="1.0.117"
+serde_json = "*"
